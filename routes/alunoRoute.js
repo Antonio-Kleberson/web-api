@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const AlunoService = require("../services/aluno.service");
 
-// Listar
+// Listar todos os alunos
 router.get("/listar", (req, res) => {
   try {
     const lista = AlunoService.listar();
@@ -12,7 +12,7 @@ router.get("/listar", (req, res) => {
   }
 });
 
-// Buscar por ID
+// Buscar aluno por ID
 router.get("/recuperar/:id", (req, res) => {
   const id = parseInt(req.params.id);
   const aluno = AlunoService.buscarPorId(id);
@@ -24,7 +24,7 @@ router.get("/recuperar/:id", (req, res) => {
   res.json(aluno);
 });
 
-// Cadastrar
+// Cadastrar aluno
 router.post("/cadastrar", (req, res) => {
   try {
     const { nome, curso, ira } = req.body;
@@ -40,7 +40,7 @@ router.post("/cadastrar", (req, res) => {
   }
 });
 
-// Atualizar
+// Atualizar aluno
 router.put("/atualizar/:id", (req, res) => {
   try {
     const id = parseInt(req.params.id);
@@ -62,7 +62,7 @@ router.put("/atualizar/:id", (req, res) => {
   }
 });
 
-// Remover
+// Remover aluno
 router.delete("/apagar/:id", (req, res) => {
   const id = parseInt(req.params.id);
   const removido = AlunoService.remover(id);

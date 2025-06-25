@@ -14,7 +14,6 @@ class AlunoService {
     if (!nome || !curso || isNaN(parseFloat(ira))) {
       throw new Error("Dados inválidos para cadastro");
     }
-
     const novoId = alunos.length ? Math.max(...alunos.map(a => a.id)) + 1 : 1;
     const novoAluno = new Aluno(novoId, nome, curso, parseFloat(ira));
     alunos.push(novoAluno);
@@ -34,7 +33,6 @@ class AlunoService {
   static remover(id) {
     const index = alunos.findIndex(a => a.id === id);
     if (index === -1) return null;
-
     return alunos.splice(index, 1)[0];
   }
 }

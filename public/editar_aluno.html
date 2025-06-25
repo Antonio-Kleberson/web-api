@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Editar Aluno</title>
+  <style>
+    body { font-family: Arial; margin: 20px; }
+    form { display: flex; flex-direction: column; width: 300px; }
+    input, button { margin-bottom: 10px; padding: 10px; font-size: 16px; }
+    button { background-color: #4CAF50; color: white; border: none; cursor: pointer; }
+    button:hover { background-color: #45a049; }
+    #mensagem { margin-top: 10px; font-size: 14px; color: red; }
+    nav button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+    nav button:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <button id="btnVoltar">Voltar para Lista</button>
+  </nav>
+
+  <h1>Editar Aluno</h1>
+
+  <form id="form-editar">
+    <input type="text" id="nome" placeholder="Nome" required />
+    <input type="text" id="curso" placeholder="Curso" required />
+    <input type="number" id="ira" step="0.01" placeholder="IRA" required />
+    <button type="submit">Salvar</button>
+  </form>
+
+  <div id="mensagem"></div>
+
+  <script>
+    // Botão voltar para listar alunos
+    document.getElementById('btnVoltar').addEventListener('click', () => {
+      window.location.href = '/listar_aluno.html';
+    });
+
+    const id = new URLSearchParams(window.location.search).get('id');
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const res = await fetch(`http://localhost:3001/alunos/recuperar/${id}`);
+        const aluno = await res.json();
+
+        document.getElementById('nome').value = aluno.nome;
+        document.getElementById('curso').value = aluno.curso;
+        document.getElementById('ira').value = aluno.ira;
+      } catch {
+        document.getElementById('mensagem').textContent = 'Erro ao carregar dados.';
+      }
+    });
+
+    document.getElementById('form-editar').addEventListener('submit', async e => {
+      e.preventDefault();
+
+      const nome = document.getElementById('nome').value.trim();
+      const curso = document.getElementById('curso').value.trim();
+      const ira = parseFloat(document.getElementById('ira').value);
+
+      if (isNaN(ira) || ira < 0 || ira > 10) {
+        document.getElementById('mensagem').textContent = 'IRA inválido.';
+        return;
+      }
+
+      try {
+        const res = await fetch(`http://localhost:3001/alunos/atualizar/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nome, curso, ira }),
+        });
+
+        if (res.ok) {
+          const msg = document.getElementById('mensagem');
+          msg.style.color = 'green';
+          msg.textContent = 'Aluno atualizado com sucesso!';
+        } else {
+          document.getElementById('mensagem').textContent = 'Erro ao atualizar.';
+        }
+      } catch {
+        document.getElementById('mensagem').textContent = 'Erro ao conectar com o servidor.';
+      }
+    });
+  </script>
+</body>
+</html>

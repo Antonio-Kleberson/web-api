@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Visualizar Alunos</title>
+  <style>
+    body { font-family: Arial; margin: 20px; }
+    h1 { text-align: center; color: #333; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+    th { background-color: #f4f4f4; }
+    a { color: #4CAF50; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    button {
+      background-color: #f44336; color: white;
+      border: none; padding: 5px 10px; cursor: pointer;
+    }
+    button:hover { background-color: #d32f2f; }
+    #media { margin-top: 20px; text-align: center; font-weight: bold; }
+    /* Estilo do botão de navegação para criar aluno */
+    nav button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    nav button:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <button id="btnCadastrar">Cadastrar Aluno</button>
+  </nav>
+
+  <h1>Lista de Alunos e Média do IRA</h1>
+
+  <table id="tabela-alunos">
+    <thead>
+      <tr>
+        <th>Nome</th><th>Curso</th><th>IRA</th><th>Editar</th><th>Excluir</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <div id="media"></div>
+
+  <script>
+    // Redireciona para a página de cadastro ao clicar no botão
+    document.getElementById('btnCadastrar').addEventListener('click', () => {
+      window.location.href = '/criar_aluno.html';
+    });
+
+    async function carregarAlunos() {
+      try {
+        const res = await fetch('http://localhost:3001/alunos/listar');
+        const alunos = await res.json();
+
+        const tbody = document.querySelector('#tabela-alunos tbody');
+        tbody.innerHTML = '';
+        let somaIRA = 0;
+
+        alunos.forEach(aluno => {
+          somaIRA += parseFloat(aluno.ira);
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${aluno.nome}</td>
+            <td>${aluno.curso}</td>
+            <td>${aluno.ira}</td>
+            <td><a href="/editar_aluno.html?id=${aluno.id}">Editar</a></td>
+            <td><button class="btn-excluir" data-id="${aluno.id}">Excluir</button></td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        // Adiciona event listeners para excluir depois de criar os botões
+        document.querySelectorAll('.btn-excluir').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const id = btn.getAttribute('data-id');
+            if (!confirm('Tem certeza que deseja excluir este aluno?')) return;
+
+            try {
+              const res = await fetch(`http://localhost:3001/alunos/apagar/${id}`, { method: 'DELETE' });
+              const data = await res.json();
+
+              if (res.ok) {
+                alert('Aluno excluído com sucesso!');
+                carregarAlunos();
+              } else {
+                alert(data.erro || 'Erro ao excluir aluno.');
+              }
+            } catch (error) {
+              alert('Erro na comunicação com o servidor.');
+              console.error(error);
+            }
+          });
+        });
+
+        const media = alunos.length ? (somaIRA / alunos.length).toFixed(2) : '0.00';
+        document.getElementById('media').textContent = `Média do IRA: ${media}`;
+      } catch (error) {
+        alert('Erro ao carregar alunos.');
+        console.error(error);
+      }
+    }
+
+    carregarAlunos();
+  </script>
+</body>
+</html>
