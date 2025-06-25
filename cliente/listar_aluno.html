@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Visualizar Alunos</title>
+  <style>
+    body { font-family: Arial; margin: 20px; }
+    h1 { text-align: center; color: #333; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+    th { background-color: #f4f4f4; }
+    a { color: #4CAF50; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    button {
+      background-color: #f44336; color: white;
+      border: none; padding: 5px 10px; cursor: pointer;
+    }
+    button:hover { background-color: #d32f2f; }
+    #media { margin-top: 20px; text-align: center; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <nav><a href="criar_aluno.html">Cadastrar Aluno</a></nav>
+
+  <h1>Lista de Alunos e Média do IRA</h1>
+
+  <table id="tabela-alunos">
+    <thead>
+      <tr>
+        <th>Nome</th><th>Curso</th><th>IRA</th><th>Editar</th><th>Excluir</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <div id="media"></div>
+
+  <script>
+    async function carregarAlunos() {
+      try {
+        const res = await fetch('http://localhost:3001/api/alunos/listar');
+        const alunos = await res.json();
+
+        const tbody = document.querySelector('#tabela-alunos tbody');
+        tbody.innerHTML = '';
+        let somaIRA = 0;
+
+        alunos.forEach(aluno => {
+          somaIRA += parseFloat(aluno.ira);
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${aluno.nome}</td>
+            <td>${aluno.curso}</td>
+            <td>${aluno.ira}</td>
+            <td><a href="editar_aluno.html?id=${aluno.id}">Editar</a></td>
+            <td><button onclick="excluirAluno(${aluno.id})">Excluir</button></td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        const media = alunos.length ? (somaIRA / alunos.length).toFixed(2) : "0.00";
+        document.getElementById('media').textContent = `Média do IRA: ${media}`;
+      } catch (e) {
+        console.error("Erro ao carregar alunos:", e);
+        alert("Erro ao carregar alunos.");
+      }
+    }
+
+    async function excluirAluno(id) {
+      if (!confirm("Tem certeza que deseja excluir este aluno?")) return;
+
+      try {
+        const res = await fetch(`http://localhost:3001/api/alunos/apagar/${id}`, {
+          method: 'DELETE'
+        });
+
+        const dados = await res.json();
+        if (res.ok) {
+          alert("Aluno excluído com sucesso!");
+          carregarAlunos();
+        } else {
+          alert(dados.erro || "Erro ao excluir aluno.");
+        }
+      } catch (e) {
+        console.error("Erro ao excluir:", e);
+        alert("Erro na comunicação com o servidor.");
+      }
+    }
+
+    carregarAlunos();
+  </script>
+</body>
+</html>
